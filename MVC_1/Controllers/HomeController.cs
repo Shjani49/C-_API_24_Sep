@@ -37,7 +37,7 @@ namespace MVC_1.Controllers
         public IActionResult Test()
         {
             // This will output to the "Output" tab, allowing for console-like debugging outputs in an MVC application.
-            // Debug.WriteLine("--------------------\nDEBUGGING OUTPUT: Test() Action Called!\n--------------------");
+             Debug.WriteLine("--------------------\nDEBUGGING OUTPUT: Test() Action Called!\n--------------------");
 
             return View();
         }

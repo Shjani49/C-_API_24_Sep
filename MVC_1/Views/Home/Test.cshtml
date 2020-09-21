@@ -1,7 +1,19 @@
 ﻿@{
     ViewData["Title"] = "Test";
+    string myTestString = "A super awesome test!";
+    string[] names = { "Bob", "Sue", "Jane", "John" };
 }
 
 <h1>Test Page!</h1>
 
-<p>This is our test page to make sure we understand controller-view routing.</p>
+<p>This is our test page to make sure we understand controller-view routing. @(myTestString)</p>
+
+@for (int i = 1; i <= 10; i++)
+{
+    <p>This is run of the loop number @(i).</p>
+}
+
+@foreach (string name in names)
+{
+    <p>We would like to welcome @(name) to the page.</p>
+}
