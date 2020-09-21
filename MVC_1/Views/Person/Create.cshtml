@@ -18,6 +18,10 @@
 
 <form action="/Person/Create" method="get">
     <div>
+        <label for="id">ID</label>
+        <input type="text" id="id" name="id" value="@(ViewBag.ID)" />
+    </div>
+    <div>
         <label for="name">Name</label>
         <input type="text" id="name" name="name" value="@(ViewBag.Name)" />
     </div>

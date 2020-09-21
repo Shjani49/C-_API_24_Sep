@@ -3,5 +3,11 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>Details</h1>
+<h1>Details - @(ViewBag.Person.ID)</h1>
+
+<p>Name: @(ViewBag.Person.Name)</p>
+<p>Email: @(ViewBag.Person.Email)</p>
+<p>Phone: @(ViewBag.Person.Phone)</p>
+
+<a href="/Person/Details?id=@(ViewBag.Person.ID)&delete=true">Delete @(ViewBag.Person.Name)</a>
 

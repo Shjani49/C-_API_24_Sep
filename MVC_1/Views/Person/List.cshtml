@@ -1,7 +1,12 @@
 ﻿
 @{
     ViewData["Title"] = "List";
+
 }
 
-<h1>List</h1>
+<h1>List of Person</h1>
+@foreach (Person person in ViewBag.People)
+{
+    <a href="/Person/Details?id=@(person.ID)"><p>@(person.Name)</p></a>
+}
 
