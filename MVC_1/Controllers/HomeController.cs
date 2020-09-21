@@ -23,6 +23,7 @@ namespace MVC_1.Controllers
             // "return View()" will call the view that is associated with the path "baseurl.com/Controller/Action".
             // In this case baseurl.com/Home/Index or Views/Home/Index.cshtml.
             return View();
+            
         }
 
         public IActionResult Privacy()
