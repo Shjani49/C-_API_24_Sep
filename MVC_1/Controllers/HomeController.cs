@@ -34,11 +34,17 @@ namespace MVC_1.Controllers
         // When we click our "Test Page" link in the menu, it calls:
         //      asp-controller="Home" asp-action="Test"
         // This means it will call the controller called "HomeController" (not just "Home"), and the action method called "Test()".
-        public IActionResult Test()
+        // The get parameter content will be stored in the content parameter when the action is called.
+        public IActionResult Test(string content)
         {
             // This will output to the "Output" tab, allowing for console-like debugging outputs in an MVC application.
              Debug.WriteLine("--------------------\nDEBUGGING OUTPUT: Test() Action Called!\n--------------------");
 
+            // If we want the View to be able to see the content, we can forward it along using the ViewBag.
+            // We assign the data that is stored in our parameter to the ViewBag for use in the page.
+            //ViewBag.GETParameterData = content;
+            // By Null-Coalescing, we can ensure that the ViewBag has at least something, even if the GET parameter is not provided.
+            ViewBag.GETParameterData = content ?? "No Data Provided";
             return View();
         }
 

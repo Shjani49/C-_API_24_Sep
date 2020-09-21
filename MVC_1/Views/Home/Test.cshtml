@@ -6,7 +6,15 @@
 
 <h1>Test Page!</h1>
 
+
 <p>This is our test page to make sure we understand controller-view routing. @(myTestString)</p>
+
+<h2>Examples of ViewBag</h2>
+
+<!-- Make sure that the ViewBag property is spelled the same in both the View and Controller. -->
+<p>The content stored in ViewBag is: @(ViewBag.GETParameterData)</p>
+
+<h2>Examples of Loops &amp; LINQ</h2>
 
 @for (int i = 1; i <= 10; i++)
 {
@@ -17,3 +25,4 @@
 {
     <p>We would like to welcome @(name) to the page.</p>
 }
+<p>The first alphabetical name is @(names.OrderBy(x => x).First())</p> 
