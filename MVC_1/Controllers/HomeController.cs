@@ -20,11 +20,25 @@ namespace MVC_1.Controllers
 
         public IActionResult Index()
         {
+            // "return View()" will call the view that is associated with the path "baseurl.com/Controller/Action".
+            // In this case baseurl.com/Home/Index or Views/Home/Index.cshtml.
             return View();
         }
 
         public IActionResult Privacy()
         {
+            // In this case we call baseurl.com/Home/Privacy or Views/Home/Privacy.cshtml.
+            return View();
+        }
+
+        // When we click our "Test Page" link in the menu, it calls:
+        //      asp-controller="Home" asp-action="Test"
+        // This means it will call the controller called "HomeController" (not just "Home"), and the action method called "Test()".
+        public IActionResult Test()
+        {
+            // This will output to the "Output" tab, allowing for console-like debugging outputs in an MVC application.
+            // Debug.WriteLine("--------------------\nDEBUGGING OUTPUT: Test() Action Called!\n--------------------");
+
             return View();
         }
 
