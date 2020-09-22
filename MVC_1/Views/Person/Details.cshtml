@@ -2,12 +2,16 @@
 @{
     ViewData["Title"] = "Details";
 }
-
 <h1>Details - @(ViewBag.Person.ID)</h1>
 
-<p>Name: @(ViewBag.Person.Name)</p>
-<p>Email: @(ViewBag.Person.Email)</p>
-<p>Phone: @(ViewBag.Person.Phone)</p>
+<p>Name: @(ViewBag.Person.FirstName) @(ViewBag.Person.LastName)</p>
+<p>Phone Numbers:</p>
+<ul>
+    @foreach (PhoneNumber phoneNumber in ViewBag.Person.PhoneNumbers)
+    {
+        <li>@(phoneNumber.Number)</li>
+    }
+</ul>
 
-<a href="/Person/Details?id=@(ViewBag.Person.ID)&delete=true">Delete @(ViewBag.Person.Name)</a>
 
+<a href="/Person/Details?id=@(ViewBag.Person.ID)&delete=true">Delete @(ViewBag.Person.FirstName) @(ViewBag.Person.LastName)</a>
