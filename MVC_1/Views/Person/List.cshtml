@@ -4,6 +4,14 @@
 
 }
 
+<label for="personID">Person</label>
+<select name="personID" id="personID">
+    @foreach (Person person in ViewBag.People)
+    {
+        <option value="@(person.ID)">@(person.FirstName) @(person.LastName)</option>
+    }
+</select>
+
 <h1>List of Person</h1>
 @foreach (Person person in ViewBag.People)
 {
