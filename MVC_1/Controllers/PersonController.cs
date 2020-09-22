@@ -117,8 +117,12 @@ namespace MVC_1.Controllers
 
         public void DeletePersonByID(int id)
         {
-            // AppPeople.Remove(AppPeople.Where(x => x.ID == id).Single());
-
+           
+            using (PersonContext context = new PersonContext())
+            {
+                context.People.Remove(context.People.Where(x => x.ID == id).Single());
+                context.SaveChanges();
+            }
 
         }
     }

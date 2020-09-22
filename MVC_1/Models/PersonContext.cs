@@ -87,7 +87,12 @@ namespace MVC_1.Models
                 entity.HasOne(d => d.Person)
                     .WithMany(p => p.PhoneNumbers)
                     .HasForeignKey(d => d.PersonID)
-                    .OnDelete(DeleteBehavior.Restrict)
+                    // When we delete a record, we can modify the behaviour of the case where there are child records.
+                    // Restrict: Throw an exception if we try to orphan a child record.
+                    // Cascade: Remove any child records that would be orphaned by a removed parent.
+                    // SetNull: Set the foreign key field to null on any orphaned child records.
+                    // NoAction: Don't commit any deletions of parents which would orphan a child.
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_PhoneNumber_Person");
 
                 entity.HasData(
