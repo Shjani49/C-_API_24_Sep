@@ -22,7 +22,7 @@ namespace MVC_1.Controllers
             return RedirectToAction("List");
         }
 
-        public IActionResult Create(string Id, string name, string email, string phone)
+        public IActionResult Create(string id, string firstName, string lastName, string phone)
         {
             // When this Action gets called, there are 3 likely states:
             // 1) First page load, no data has been provided (initial state).
@@ -32,17 +32,19 @@ namespace MVC_1.Controllers
             // A request has come in that has some data stored in the query (GET or POST).
             if (Request.Query.Count > 0)
             {
-                if (id != null && name != null && email != null && phone != null)
+                if (id != null && firstName != null && lastName != null && phone != null)
                 {
                     // All expected data provided, so this will be our submit state.
-                    AppPeople.Add(new Person()
+                    Person newPerson = new Person()
                     {
-                        ID = int.Parse(id),
-                        Name = name,
-                        Email = email,
-                        Phone = phone
-                    });
-
+                        FirstName = firstName,
+                        LastName = lastName
+                    };
+                    PhoneNumber newPhoneNumber = new PhoneNumber()
+                    {
+                        Number = phone,
+                        Person = newPerson
+                    };
                     ViewBag.Success = "Successfully added the person to the list.";
 
                 }
@@ -52,9 +54,9 @@ namespace MVC_1.Controllers
                     ViewBag.Error = "Not all fields have had values provided.";
 
                     // Store our data to re-add to the form.
-                    ViewBag.ID = id;
-                    ViewBag.Name = name;
-                    ViewBag.Email = email;
+                  
+                    ViewBag.FirstName = firstName;
+                    ViewBag.LastName = lastName;
                     ViewBag.Phone = phone;
                 }
             }
