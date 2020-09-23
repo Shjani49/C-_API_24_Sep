@@ -1,8 +1,15 @@
 ﻿
 @{
     ViewData["Title"] = "List";
-
 }
+
+<h1>List</h1>
+
+<form action="/Person/List" method="get">
+    <label for="filter">Filter to Only Multiple Phone Numbers</label>
+    <input type="checkbox" name="filter" @if (ViewBag.Filter == "on") { @("checked") } />
+    <button type="submit">Filter</button>
+</form>
 
 <label for="personID">Person</label>
 <select name="personID" id="personID">
@@ -11,10 +18,7 @@
         <option value="@(person.ID)">@(person.FirstName) @(person.LastName)</option>
     }
 </select>
-
-<h1>List of Person</h1>
 @foreach (Person person in ViewBag.People)
 {
     <a href="/Person/Details?id=@(person.ID)"><p>@(person.FirstName) @(person.LastName)</p></a>
 }
-

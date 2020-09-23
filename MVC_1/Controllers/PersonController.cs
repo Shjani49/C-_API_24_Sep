@@ -135,15 +135,23 @@ namespace MVC_1.Controllers
             }
         }
 
-        public IActionResult List()
+        public IActionResult List(string filter)
         {
             // Just like with Create() all we have to do is translate our logic from List to Context.
             using (PersonContext context = new PersonContext())
             {
-                ViewBag.People = context.People.ToList();
+                // Slightly different from practice as you'll be calling methods and not using a "using" in your action.
+                if (filter == "on")
+                {
+                    ViewBag.People = context.People.Where(x => x.PhoneNumbers.Count > 1).ToList();
+                    ViewBag.Filter = filter;
+                }
+                else
+                {
+                    ViewBag.People = context.People.ToList();
+                }
+                return View();
             }
-
-            return View();
         }
 
         public IActionResult Details(string id, string delete)
