@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MVC_1.Models;
+using MVC_1.Models.Exceptions;
 
 namespace MVC_1.Controllers
 {
@@ -22,13 +23,45 @@ namespace MVC_1.Controllers
             // 2) Partial data has been provided (error state).
             // 3) Complete data has been provided (submit state).
 
+            PersonValidationException exception = new PersonValidationException();
             // A request has come in that has some data stored in the query (GET or POST).
             if (Request.Query.Count > 0)
             {
-                if (firstName != null && lastName != null && phone != null)
+                // Be a little more specific than "== null" because that doesn't account for whitespace.
+                if (string.IsNullOrWhiteSpace(firstName))
+                {
+                    exception.SubExceptions.Add(new Exception("First name was not provided."));
+                }
+                if (string.IsNullOrWhiteSpace(lastName))
+                {
+                    exception.SubExceptions.Add(new Exception("Last name was not provided."));
+                }
+                if (string.IsNullOrWhiteSpace(phone))
+                {
+                    exception.SubExceptions.Add(new Exception("Phone number was not provided."));
+                }
+                else
+                {
+                    // Check for phone number formatting (feel free to use RegEx or any other method).
+                    // Has to be in the else branch to avoid null reference exceptions.
+                    int temp;
+                    string[] phoneParts = phone.Split('-');
+                    if (!(
+                        phoneParts[0].Length == 3 &&
+                        int.TryParse(phoneParts[0], out temp) &&
+                        phoneParts[1].Length == 3 &&
+                        int.TryParse(phoneParts[1], out temp) &&
+                        phoneParts[2].Length == 4 &&
+                        int.TryParse(phoneParts[2], out temp)
+                        ))
+                    {
+                        exception.SubExceptions.Add(new Exception("Phone number was not in a valid format."));
+                    }
+                }
+                // If we haven't generated any exceptions.
+                if (exception.SubExceptions.Count == 0)
                 {
                     // All expected data provided, so this will be our submit state.
-
                     // Replace the list add with a context add.
                     // Generate the new model instances to be added to the database.
                     Person newPerson = new Person()
@@ -48,15 +81,12 @@ namespace MVC_1.Controllers
                         context.PhoneNumbers.Add(newPhoneNumber);
                         context.SaveChanges();
                     }
-
                     ViewBag.Success = "Successfully added the person to the list.";
-
                 }
                 else
                 {
                     // All expected data not provided, so this will be our error state.
-                    ViewBag.Error = "Not all fields have had values provided.";
-
+                    ViewBag.Exception = exception;
                     // Store our data to re-add to the form.
                     ViewBag.FirstName = firstName;
                     ViewBag.LastName = lastName;
@@ -65,9 +95,9 @@ namespace MVC_1.Controllers
             }
             // else
             // No request, so this will be our inital state.
-
             return View();
         }
+
 
         public IActionResult List()
         {
