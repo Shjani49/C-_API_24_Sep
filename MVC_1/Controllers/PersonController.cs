@@ -45,9 +45,9 @@ namespace MVC_1.Controllers
                     ViewBag.Exception = e;
 
                     // Store our data to re-add to the form.
-                    ViewBag.FirstName = firstName;
-                    ViewBag.LastName = lastName;
-                    ViewBag.Phone = phone;
+                    ViewBag.FirstName = firstName.Trim();
+                    ViewBag.LastName = lastName.Trim();
+                    ViewBag.Phone = phone.Trim();
                 }
             }
 
@@ -56,15 +56,35 @@ namespace MVC_1.Controllers
 
         public void CreatePerson(string firstName, string lastName, string phone)
         {
+            firstName = firstName.Trim();
+            lastName = lastName.Trim();
+            phone = phone.Trim();
+
             PersonValidationException exception = new PersonValidationException();
             // Be a little more specific than "== null" because that doesn't account for whitespace.
             if (string.IsNullOrWhiteSpace(firstName))
             {
                 exception.SubExceptions.Add(new Exception("First name was not provided."));
             }
+            if(firstName.Any(x=>char.IsDigit(x)))
+            {
+                exception.SubExceptions.Add(new Exception("First name can not contain Number."));
+            }
+            if(firstName.Length > 50)
+            {
+                exception.SubExceptions.Add(new Exception("First name cannot be more than 50 characters long."));
+            }
             if (string.IsNullOrWhiteSpace(lastName))
             {
                 exception.SubExceptions.Add(new Exception("Last name was not provided."));
+            }
+            if (lastName.Any(x => char.IsDigit(x)))
+            {
+                exception.SubExceptions.Add(new Exception("Last name can not contain Number."));
+            }
+            if (lastName.Length > 50)
+            {
+                exception.SubExceptions.Add(new Exception("Last name cannot be more than 50 characters long."));
             }
             if (string.IsNullOrWhiteSpace(phone))
             {
