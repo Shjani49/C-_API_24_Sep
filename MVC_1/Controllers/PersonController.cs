@@ -45,9 +45,9 @@ namespace MVC_1.Controllers
                     ViewBag.Exception = e;
 
                     // Store our data to re-add to the form.
-                    ViewBag.FirstName = firstName.Trim();
-                    ViewBag.LastName = lastName.Trim();
-                    ViewBag.Phone = phone.Trim();
+                    ViewBag.FirstName = firstName != null ? firstName.Trim() : null;
+                    ViewBag.LastName = lastName != null ? lastName.Trim() : null;
+                    ViewBag.Phone = phone != null ? phone.Trim() : null;
                 }
             }
 
@@ -56,9 +56,9 @@ namespace MVC_1.Controllers
 
         public void CreatePerson(string firstName, string lastName, string phone)
         {
-            firstName = firstName.Trim();
-            lastName = lastName.Trim();
-            phone = phone.Trim();
+            firstName = firstName != null ? firstName.Trim() : null;
+            lastName = lastName != null ? lastName.Trim() : null;
+            phone = phone != null ? phone.Trim() : null;
 
             PersonValidationException exception = new PersonValidationException();
             // Be a little more specific than "== null" because that doesn't account for whitespace.
