@@ -135,7 +135,7 @@ namespace MVC_1.Controllers
             }
         }
 
-        public IActionResult List(string filter)
+        public IActionResult List(string filter, string id)
         {
 
             // Slightly different from practice as you'll be calling methods and not using a "using" in your action.
@@ -146,8 +146,10 @@ namespace MVC_1.Controllers
             }
             else
             {
-                ViewBag.People = GetPeople();
+                 ViewBag.People = GetPeople();
+              
             }
+            
             return View();
 
         }
@@ -164,6 +166,14 @@ namespace MVC_1.Controllers
             {
                 return context.People.Where(x => x.PhoneNumbers.Count > 1).ToList();
             }
+        }
+        public List<Person> GetPeopleStartingWith(string startChar)
+        {
+            using (PersonContext context = new PersonContext())
+            {
+                return context.People.Where(x => x.FirstName.StartsWith(startChar)).ToList();
+            }
+
         }
 
         public IActionResult Details(string id, string delete)
