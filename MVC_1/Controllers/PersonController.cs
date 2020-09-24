@@ -66,11 +66,11 @@ namespace MVC_1.Controllers
             {
                 exception.SubExceptions.Add(new Exception("First name was not provided."));
             }
-            if(firstName.Any(x=>char.IsDigit(x)))
+            if (firstName.Any(x => char.IsDigit(x)))
             {
                 exception.SubExceptions.Add(new Exception("First name can not contain Number."));
             }
-            if(firstName.Length > 50)
+            if (firstName.Length > 50)
             {
                 exception.SubExceptions.Add(new Exception("First name cannot be more than 50 characters long."));
             }
@@ -137,20 +137,32 @@ namespace MVC_1.Controllers
 
         public IActionResult List(string filter)
         {
-            // Just like with Create() all we have to do is translate our logic from List to Context.
+
+            // Slightly different from practice as you'll be calling methods and not using a "using" in your action.
+            if (filter == "on")
+            {
+                ViewBag.People = GetPeopleWithMultiplePhoneNumbers();
+                ViewBag.Filter = filter;
+            }
+            else
+            {
+                ViewBag.People = GetPeople();
+            }
+            return View();
+
+        }
+        public List<Person> GetPeople()
+        {
             using (PersonContext context = new PersonContext())
             {
-                // Slightly different from practice as you'll be calling methods and not using a "using" in your action.
-                if (filter == "on")
-                {
-                    ViewBag.People = context.People.Where(x => x.PhoneNumbers.Count > 1).ToList();
-                    ViewBag.Filter = filter;
-                }
-                else
-                {
-                    ViewBag.People = context.People.ToList();
-                }
-                return View();
+                return context.People.ToList();
+            }
+        }
+        public List<Person> GetPeopleWithMultiplePhoneNumbers()
+        {
+            using (PersonContext context = new PersonContext())
+            {
+                return context.People.Where(x => x.PhoneNumbers.Count > 1).ToList();
             }
         }
 

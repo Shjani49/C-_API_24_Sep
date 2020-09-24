@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MVC_1.Models;
 
 namespace MVC_1.Controllers
 {
@@ -22,27 +23,21 @@ namespace MVC_1.Controllers
         [HttpGet("People/All")]
 
         // This is the return type of the request. The method name is irrelevant as far as the clients are concerned.
-        public ActionResult<object> GetAllPeople()
+        public ActionResult<IEnumerable<Person>> GetAllPeople()
+        {
+            PersonController controller = new PersonController();
+            return controller.GetPeople();
+        }
+
+        // This determines the second segment of the path.
+        [HttpGet("People/MultiplePhones")]
+
+        // This is the return type of the request. The method name is irrelevant as far as the clients are concerned.
+        public ActionResult<IEnumerable<Person>> GetPeopleWithMultiplePhones()
         {
             // This is what we are returning. It gets serialized as JSON if we return an object.
-            return new
-            {
-                name = "John",
-                age = 31,
-                city = "New York"
-            };
-
-            /* public ActionResult<IEnumerable<string>> GetAllPeople()
-             {
-                 return new[]
-                 {
-                     "Hello",
-                     "This",
-                     "Is",
-                     "A",
-                     "Test",
-                     "Data"
-                 };*/
+            PersonController controller = new PersonController();
+            return controller.GetPeopleWithMultiplePhoneNumbers();
 
 
         }
