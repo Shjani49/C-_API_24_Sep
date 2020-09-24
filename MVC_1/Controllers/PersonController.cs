@@ -218,9 +218,23 @@ namespace MVC_1.Controllers
                 context.People.Remove(context.People.Where(x => x.ID == id).Single());
                 context.SaveChanges();
             }
+        }
 
+        public void ChangeFirstNameByID(int id, string newName)
+        {
+            // Make sure that if their name is already the name provided, throw an exception.
+            // If they don't exist, throw an exception.
 
-
+            using (PersonContext context = new PersonContext())
+            {
+                Person target = context.People.Where(x => x.ID == id).Single();
+                if (target.FirstName == newName)
+                {
+                    throw new Exception("The target's first name is the same as the requested new name.");
+                }
+                target.FirstName = newName;
+                context.SaveChanges();
+            }
         }
     }
 }
