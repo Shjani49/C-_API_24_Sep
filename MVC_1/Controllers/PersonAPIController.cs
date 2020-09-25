@@ -100,36 +100,79 @@ namespace MVC_1.Controllers
         // This is the return type of the request. The method name is irrelevant as far as the clients are concerned.
         public ActionResult<object> GetPersonWithID(int id)
         {
-            // This is what we are returning. It gets serialized as JSON if we return an object.
-            Person person = new PersonController().GetPersonByID(id);
+            /* // This is what we are returning. It gets serialized as JSON if we return an object.
+             Person person = new PersonController().GetPersonByID(id);
 
-            // This is "kind of" a DTO. We're putting the fields we care about into another object that is not the database model.
-            // They help get around errors like the circular references, and (if you use them in the context) the missing virtual properties.
-            return new
+             // This is "kind of" a DTO. We're putting the fields we care about into another object that is not the database model.
+             // They help get around errors like the circular references, and (if you use them in the context) the missing virtual properties.
+             return new
+             {
+                 id = person.ID,
+                 firstName = person.FirstName,
+                 lastName = person.LastName,
+                 phoneNumbers = person.PhoneNumbers.Select(x => x.Number)
+             };*/
+            ActionResult<object> response;
+            try
             {
-                id = person.ID,
-                firstName = person.FirstName,
-                lastName = person.LastName,
-                phoneNumbers = person.PhoneNumbers.Select(x => x.Number)
-            };
+                Person person = new PersonController().GetPersonByID(id);
+
+                // This is "kind of" a DTO. We're putting the fields we care about into another object that is not the database model.
+                // They help get around errors like the circular references, and (if you use them in the context) the missing virtual properties.
+                response = new
+                {
+                    id = person.ID,
+                    firstName = person.FirstName,
+                    lastName = person.LastName,
+                    phoneNumbers = person.PhoneNumbers.Select(x => x.Number)
+                };
+            }
+            catch
+            {
+                response = NotFound(new { error = $"No person at ID {id} could be found." });
+            }
+
+            return response;
         }
 
         // This method of GET parameters will retrieve the argument from the query string (after the ? in the URL).
         [HttpGet("People/ID")]
         public ActionResult<object> GetPersonWithIDParameterized(int id)
         {
-            // This is what we are returning. It gets serialized as JSON if we return an object.
-            Person person = new PersonController().GetPersonByID(id);
+            /* // This is what we are returning. It gets serialized as JSON if we return an object.
+             Person person = new PersonController().GetPersonByID(id);
 
-            // This is "kind of" a DTO. We're putting the fields we care about into another object that is not the database model.
-            // They help get around errors like the circular references, and (if you use them in the context) the missing virtual properties.
-            return new
+             // This is "kind of" a DTO. We're putting the fields we care about into another object that is not the database model.
+             // They help get around errors like the circular references, and (if you use them in the context) the missing virtual properties.
+             return new
+             {
+                 id = person.ID,
+                 firstName = person.FirstName,
+                 lastName = person.LastName,
+                 phoneNumbers = person.PhoneNumbers.Select(x => x.Number)
+             */
+            ActionResult<object> response;
+            // This is what we are returning. It gets serialized as JSON if we return an object.
+            try
             {
-                id = person.ID,
-                firstName = person.FirstName,
-                lastName = person.LastName,
-                phoneNumbers = person.PhoneNumbers.Select(x => x.Number)
-            };
+                Person person = new PersonController().GetPersonByID(id);
+
+                // This is "kind of" a DTO. We're putting the fields we care about into another object that is not the database model.
+                // They help get around errors like the circular references, and (if you use them in the context) the missing virtual properties.
+                response = new
+                {
+                    id = person.ID,
+                    firstName = person.FirstName,
+                    lastName = person.LastName,
+                    phoneNumbers = person.PhoneNumbers.Select(x => x.Number)
+                };
+            }
+            catch
+            {
+                response = NotFound(new { error = $"No person at ID {id} could be found." });
+            }
+
+            return response;
         }
 
 
@@ -199,33 +242,37 @@ namespace MVC_1.Controllers
             return response;
         }
 
-        [HttpPut("People/Update")]
-        public ActionResult UpdatePerson(string id, string firstName, string lastName)
+       
+        [HttpDelete("People/Delete")]
+        public ActionResult DeletePerson(string id)
         {
             ActionResult response;
-            try
-            {
-                new PersonController().UpdatePerson(id, firstName, lastName);
 
-                // Semantically, we should be including a copy of the object (or at least a DTO rendering of it) in the Ok response.
-                // For our purposes, a message with the fields will suffice.
-                response = Ok(new { message = $"Successfully update person at ID {id} to be {firstName} {lastName}." });
-            }
-            catch (PersonValidationException e)
+            // This logic should probably be in the DeletePersonByID() method, but if I change the parameter type to string now, I'll have to fix compiler errors in the Views.
+            int idParsed;
+            if (string.IsNullOrWhiteSpace(id))
             {
-                // If it couldn't find the entity to update, that's the primary concern, so discard the other subexceptions and just return NotFound().
-                if (e.SubExceptions.Any(x => x.GetType() == typeof(NullReferenceException)))
+                response = Conflict(new { error = "ID was not provided." });
+            }
+            else
+            {
+                if (!int.TryParse(id, out idParsed))
                 {
-                    response = NotFound(new { error = $"No entity exists at ID {id}." });
+                    response = Conflict(new { error = "The provided ID is invalid." });
                 }
-                // If there's no NullReferenceException, but there's still an exception, return the list of problems.
                 else
                 {
-                    response = UnprocessableEntity(new { errors = e.SubExceptions.Select(x => x.Message) });
+                    try
+                    {
+                        new PersonController().DeletePersonByID(idParsed);
+                        response = Ok(new { message = $"Successfully deleted the person with ID {idParsed}." });
+                    }
+                    catch
+                    {
+                        response = NotFound(new { error = $"No person at ID {idParsed} could be found." });
+                    }
                 }
             }
-
-
             return response;
         }
     }
