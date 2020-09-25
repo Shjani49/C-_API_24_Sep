@@ -54,41 +54,52 @@ namespace MVC_1.Controllers
             return View();
         }
 
-        public void CreatePerson(string firstName, string lastName, string phone)
+        // Do NOT do this in practices, have a separate create for phone numbers.
+        // The only reason I did this is we scaffolded the phone number table and I didn't want to cause conflicts.
+        public int CreatePerson(string firstName, string lastName, string phone)
         {
             firstName = firstName != null ? firstName.Trim() : null;
             lastName = lastName != null ? lastName.Trim() : null;
             phone = phone != null ? phone.Trim() : null;
+            int createdID;
 
             PersonValidationException exception = new PersonValidationException();
             // Be a little more specific than "== null" because that doesn't account for whitespace.
             if (string.IsNullOrWhiteSpace(firstName))
             {
-                exception.SubExceptions.Add(new Exception("First name was not provided."));
+                exception.SubExceptions.Add(new ArgumentNullException(nameof(firstName), "First name was not provided."));
             }
-            if (firstName.Any(x => char.IsDigit(x)))
+            else
             {
-                exception.SubExceptions.Add(new Exception("First name can not contain Number."));
+                if (firstName.Any(x => char.IsDigit(x)))
+                {
+                    exception.SubExceptions.Add(new ArgumentException(nameof(firstName), "First name cannot contain numbers."));
+                }
+                if (firstName.Length > 50)
+                {
+                    exception.SubExceptions.Add(new ArgumentOutOfRangeException(nameof(firstName), "First name cannot be more than 50 characters long."));
+                }
             }
-            if (firstName.Length > 50)
-            {
-                exception.SubExceptions.Add(new Exception("First name cannot be more than 50 characters long."));
-            }
+
             if (string.IsNullOrWhiteSpace(lastName))
             {
-                exception.SubExceptions.Add(new Exception("Last name was not provided."));
+                exception.SubExceptions.Add(new ArgumentNullException(nameof(lastName), "Last name was not provided."));
             }
-            if (lastName.Any(x => char.IsDigit(x)))
+            else
             {
-                exception.SubExceptions.Add(new Exception("Last name can not contain Number."));
+                if (lastName.Any(x => char.IsDigit(x)))
+                {
+                    exception.SubExceptions.Add(new ArgumentException(nameof(lastName), "Last name cannot contain numbers."));
+                }
+                if (lastName.Length > 50)
+                {
+                    exception.SubExceptions.Add(new ArgumentOutOfRangeException(nameof(lastName), "Last name cannot be more than 50 characters long."));
+                }
             }
-            if (lastName.Length > 50)
-            {
-                exception.SubExceptions.Add(new Exception("Last name cannot be more than 50 characters long."));
-            }
+
             if (string.IsNullOrWhiteSpace(phone))
             {
-                exception.SubExceptions.Add(new Exception("Phone number was not provided."));
+                exception.SubExceptions.Add(new ArgumentNullException(nameof(phone), "Phone number was not provided."));
             }
             else
             {
@@ -105,7 +116,7 @@ namespace MVC_1.Controllers
                     int.TryParse(phoneParts[2], out temp)
                     ))
                 {
-                    exception.SubExceptions.Add(new Exception("Phone number was not in a valid format."));
+                    exception.SubExceptions.Add(new ArgumentException(nameof(phone), "Phone number was not in a valid format."));
                 }
             }
 
@@ -116,6 +127,7 @@ namespace MVC_1.Controllers
             }
 
             // If we're at this point, we have no exceptions, as nothing got thrown.
+            // At this point, ID is 0.
             Person newPerson = new Person()
             {
                 FirstName = firstName,
@@ -129,13 +141,95 @@ namespace MVC_1.Controllers
             // Add the new model instances to the database.
             using (PersonContext context = new PersonContext())
             {
+                // By adding our object to the context, we're queueing it to receive an AUTO_INCREMENT ID once saved.
                 context.People.Add(newPerson);
                 context.PhoneNumbers.Add(newPhoneNumber);
+                // When we save it, the object and all references thereto are updated with the new ID.
+                context.SaveChanges();
+                // Which makes it very simple to then get the new ID to return.
+                createdID = newPerson.ID;
+            }
+            return createdID;
+        }
+
+        // A PUT request, semantically, overwrites an entire entity and does not update a specific field.
+        public void UpdatePerson(string id, string firstName, string lastName)
+        {
+            id = id != null ? id.Trim() : null;
+            firstName = firstName != null ? firstName.Trim() : null;
+            lastName = lastName != null ? lastName.Trim() : null;
+            int idParsed = 0;
+
+            using (PersonContext context = new PersonContext())
+            {
+                PersonValidationException exception = new PersonValidationException();
+
+                if (string.IsNullOrWhiteSpace(id))
+                {
+                    exception.SubExceptions.Add(new ArgumentNullException(nameof(id), "ID was not provided."));
+                }
+                else
+                {
+                    if (!int.TryParse(id, out idParsed))
+                    {
+                        exception.SubExceptions.Add(new ArgumentException(nameof(id), "ID was not valid."));
+                    }
+                    else
+                    {
+                        if (context.People.Where(x => x.ID == idParsed).Count() != 1)
+                        {
+                            exception.SubExceptions.Add(new NullReferenceException("Person with that ID does not exist."));
+                        }
+                    }
+                }
+                if (string.IsNullOrWhiteSpace(firstName))
+                {
+                    exception.SubExceptions.Add(new ArgumentNullException(nameof(firstName), "First name was not provided."));
+                }
+                else
+                {
+                    if (firstName.Any(x => char.IsDigit(x)))
+                    {
+                        exception.SubExceptions.Add(new ArgumentException(nameof(firstName), "First name cannot contain numbers."));
+                    }
+                    if (firstName.Length > 50)
+                    {
+                        exception.SubExceptions.Add(new ArgumentOutOfRangeException(nameof(firstName), "First name cannot be more than 50 characters long."));
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(lastName))
+                {
+                    exception.SubExceptions.Add(new ArgumentNullException(nameof(lastName), "Last name was not provided."));
+                }
+                else
+                {
+                    if (lastName.Any(x => char.IsDigit(x)))
+                    {
+                        exception.SubExceptions.Add(new ArgumentException(nameof(lastName), "Last name cannot contain numbers."));
+                    }
+                    if (lastName.Length > 50)
+                    {
+                        exception.SubExceptions.Add(new ArgumentOutOfRangeException(nameof(lastName), "Last name cannot be more than 50 characters long."));
+                    }
+                }
+
+                // If any exceptions have been generated by any validation, throw them as one bundled exception.
+                if (exception.SubExceptions.Count > 0)
+                {
+                    throw exception;
+                }
+
+                // If we're at this point, we have no exceptions, as nothing got thrown.
+                Person target = context.People.Where(x => x.ID == idParsed).Single();
+                target.FirstName = firstName;
+                target.LastName = lastName;
                 context.SaveChanges();
             }
         }
 
-        public IActionResult List(string filter, string id)
+
+        public IActionResult List(string filter)
         {
 
             // Slightly different from practice as you'll be calling methods and not using a "using" in your action.
@@ -146,34 +240,12 @@ namespace MVC_1.Controllers
             }
             else
             {
-                 ViewBag.People = GetPeople();
-              
+                ViewBag.People = GetPeople();
             }
-            
+
+
+
             return View();
-
-        }
-        public List<Person> GetPeople()
-        {
-            using (PersonContext context = new PersonContext())
-            {
-                return context.People.ToList();
-            }
-        }
-        public List<Person> GetPeopleWithMultiplePhoneNumbers()
-        {
-            using (PersonContext context = new PersonContext())
-            {
-                return context.People.Where(x => x.PhoneNumbers.Count > 1).ToList();
-            }
-        }
-        public List<Person> GetPeopleStartingWith(string startChar)
-        {
-            using (PersonContext context = new PersonContext())
-            {
-                return context.People.Where(x => x.FirstName.StartsWith(startChar)).ToList();
-            }
-
         }
 
         public IActionResult Details(string id, string delete)
@@ -193,6 +265,28 @@ namespace MVC_1.Controllers
             return result;
         }
 
+        public List<Person> GetPeople()
+        {
+            using (PersonContext context = new PersonContext())
+            {
+                return context.People.ToList();
+            }
+        }
+        public List<Person> GetPeopleStartingWith(string startChar)
+        {
+            using (PersonContext context = new PersonContext())
+            {
+                return context.People.Where(x => x.FirstName.StartsWith(startChar)).ToList();
+            }
+
+        }
+        public List<Person> GetPeopleWithMultiplePhoneNumbers()
+        {
+            using (PersonContext context = new PersonContext())
+            {
+                return context.People.Where(x => x.PhoneNumbers.Count > 1).ToList();
+            }
+        }
         public Person GetPersonByID(int id)
         {
             Person target;
@@ -210,16 +304,6 @@ namespace MVC_1.Controllers
             target.PhoneNumbers = phoneNumbers;
             return target;
         }
-
-        public void DeletePersonByID(int id)
-        {
-            using (PersonContext context = new PersonContext())
-            {
-                context.People.Remove(context.People.Where(x => x.ID == id).Single());
-                context.SaveChanges();
-            }
-        }
-
         public void ChangeFirstNameByID(int id, string newName)
         {
             // Make sure that if their name is already the name provided, throw an exception.
@@ -235,6 +319,17 @@ namespace MVC_1.Controllers
                 target.FirstName = newName;
                 context.SaveChanges();
             }
+        }
+        public void DeletePersonByID(int id)
+        {
+            using (PersonContext context = new PersonContext())
+            {
+                context.People.Remove(context.People.Where(x => x.ID == id).Single());
+                context.SaveChanges();
+            }
+
+
+
         }
     }
 }

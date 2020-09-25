@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MVC_1.Models;
+using MVC_1.Models.Exceptions;
 
 namespace MVC_1.Controllers
 {
@@ -131,6 +132,20 @@ namespace MVC_1.Controllers
             };
         }
 
+
+        // Patches can either be in this format below, where an endpoint does one action, or in a format that specifies the "instructions" in the query.
+        /*
+         For example:
+         id: 9,
+         action: update,
+         variable: FirstName,
+         value: John
+        or
+          id: 20,
+          action: add,
+          variable: Count,
+          value: 5
+        */
         [HttpPatch("People/FirstName")]
         public ActionResult ChangeFirstName(int id, string newName)
         {
@@ -138,9 +153,11 @@ namespace MVC_1.Controllers
             try
             {
                 new PersonController().ChangeFirstNameByID(id, newName);
+              
                 response = Ok(new { message = $"Successfully renamed person {id} to {newName}." });
             }
-            catch (InvalidOperationException e)
+        
+            catch (InvalidOperationException)
             {
                 response = NotFound(new { error = $"The requested person at ID {id} does not exist." });
             }
@@ -149,7 +166,68 @@ namespace MVC_1.Controllers
                 response = Conflict(new { error = e.Message });
             }
 
+
+            return response;
+        }
+
+        [HttpPost("People/Create")]
+        public ActionResult CreatePerson(string firstName, string lastName, string phone)
+        {
+            ActionResult response;
+            try
+            {
+                int newID = new PersonController().CreatePerson(firstName, lastName, phone);
+
+                // Just for fun:
+                // (It's also an example of how to throw a code that doesn't have a method built-in)
+                if (firstName.Trim().ToUpper() == "TEAPOT" && lastName.Trim().ToUpper() == "COFFEE")
+                {
+                    response = StatusCode(418, new { message = $"Successfully created teapot but it does not want to brew coffee. It has the phone number {phone}." });
+                }
+                else
+                {
+                    // This should really be a Create() that provides the API endpoint for the GET to retrieve the created object.
+                    response = Created($"API/PersonAPI/People/ID/{newID}", new { message = $"Successfully created person {firstName} {lastName} with the phone number {phone} at ID {newID}." });
+                }
+            }
+            catch (PersonValidationException e)
+            {
+                response = UnprocessableEntity(new { errors = e.SubExceptions.Select(x => x.Message) });
+            }
+
+
+            return response;
+        }
+
+        [HttpPut("People/Update")]
+        public ActionResult UpdatePerson(string id, string firstName, string lastName)
+        {
+            ActionResult response;
+            try
+            {
+                new PersonController().UpdatePerson(id, firstName, lastName);
+
+                // Semantically, we should be including a copy of the object (or at least a DTO rendering of it) in the Ok response.
+                // For our purposes, a message with the fields will suffice.
+                response = Ok(new { message = $"Successfully update person at ID {id} to be {firstName} {lastName}." });
+            }
+            catch (PersonValidationException e)
+            {
+                // If it couldn't find the entity to update, that's the primary concern, so discard the other subexceptions and just return NotFound().
+                if (e.SubExceptions.Any(x => x.GetType() == typeof(NullReferenceException)))
+                {
+                    response = NotFound(new { error = $"No entity exists at ID {id}." });
+                }
+                // If there's no NullReferenceException, but there's still an exception, return the list of problems.
+                else
+                {
+                    response = UnprocessableEntity(new { errors = e.SubExceptions.Select(x => x.Message) });
+                }
+            }
+
+
             return response;
         }
     }
 }
+
